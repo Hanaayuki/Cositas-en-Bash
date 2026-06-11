@@ -1,48 +1,67 @@
-# Lista de combinaciones ganadoras (indices del array)
-    # Filas, columnas y diagonales
-    c=( "0 1 2" "3 4 5" "6 7 8" "0 3 6" "1 4 7" "2 5 8" "0 4 8" "2 4 6" )
-    for combo in "${c[@]}"; do
-        set -- $combo
-        if [[ "${tablero[$1]}" == "${tablero[$2]}" && "${tablero[$2]}" == "${tablero[$3]}" ]]; then
-            return 0 # ¡Hay ganador!
-        fi
-    done
-    return 1
+#!/bin/bash
+
+# 1. Registro de jugadores
+echo "Hola jugador, vamos a jugar 3 en raya"
+echo "Por favor, que los 2 jugadores se registren"
+read -p "Nombre del Jugador 1 (será X): " j1
+read -p "Nombre del Jugador 2 (será O): " j2
+
+tablero=(1 2 3 4 5 6 7 8 9)
+jugador=$j1
+marca="X"
+
+# 2. Función para dibujar
+dibujar_tablero() {
+    clear
+    echo " ---> 3 EN RAYA <--- "
+    echo " ${tablero[0]} | ${tablero[1]} | ${tablero[2]} "
+    echo "---+---+---"
+    echo " ${tablero[3]} | ${tablero[4]} | ${tablero[5]} "
+    echo "---+---+---"
+    echo " ${tablero[6]} | ${tablero[7]} | ${tablero[8]} "
 }
 
+# 3. Función para verificar ganador
+verificar_ganador() {
+    # Combinaciones ganadoras (filas, columnas, diagonales)
+    if [[ ${tablero[0]} == ${tablero[1]} && ${tablero[1]} == ${tablero[2]} ]] || \
+       [[ ${tablero[3]} == ${tablero[4]} && ${tablero[4]} == ${tablero[5]} ]] || \
+       [[ ${tablero[6]} == ${tablero[7]} && ${tablero[7]} == ${tablero[8]} ]] || \
+       [[ ${tablero[0]} == ${tablero[3]} && ${tablero[3]} == ${tablero[6]} ]] || \
+       [[ ${tablero[1]} == ${tablero[4]} && ${tablero[4]} == ${tablero[7]} ]] || \
+       [[ ${tablero[2]} == ${tablero[5]} && ${tablero[5]} == ${tablero[8]} ]] || \
+       [[ ${tablero[0]} == ${tablero[4]} && ${tablero[4]} == ${tablero[8]} ]] || \
+       [[ ${tablero[2]} == ${tablero[4]} && ${tablero[4]} == ${tablero[6]} ]]; then
+        return 0 # Ganó alguien
+    else
+        return 1 # Nadie ha ganado todavía
+    fi
+}
+
+# 4. Bucle principal
 for i in {1..9}; do
     dibujar_tablero
+    echo "Turno de: $jugador ($marca)"
+    read -p "Elige una posicion (1-9): " p
     
-    # Decidir a quién le toca
-    if [ $((turno % 2)) -eq 1 ]; then
-        nombre_actual=$jugador1
-        marca="X"
-    else
-        nombre_actual=$jugador2
-        marca="O"
-    fi
-
-    echo "Turno de: $nombre_actual ($marca)"
-    read -p "Elige una posicion (1-9): " pos
-    
-    # Validar posición
-    indice=$((pos-1))
-    if [[ "${tablero[$indice]}" =~ [XO] ]]; then
-        echo "¡Casilla ocupada! Pierdes turno."
-        sleep 1
-        continue
-    fi
-    
+    indice=$((p-1))
     tablero[$indice]=$marca
     
     if verificar_ganador; then
         dibujar_tablero
-        echo "¡FELICIDADES $nombre_actual, HAS GANADO!"
+        echo "¡FELICIDADES $jugador, HAS GANADO!"
         exit
     fi
     
-    turno=$((turno + 1))
+    # Cambiar de jugador
+    if [ "$jugador" == "$j1" ]; then
+        jugador=$j2
+        marca="O"
+    else
+        jugador=$j1
+        marca="X"
+    fi
 done
 
 dibujar_tablero
-echo "¡Es un EMPATE!"
+echo "¡Es un EMPATE
