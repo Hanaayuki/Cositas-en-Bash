@@ -1,0 +1,48 @@
+# Lista de combinaciones ganadoras (indices del array)
+    # Filas, columnas y diagonales
+    c=( "0 1 2" "3 4 5" "6 7 8" "0 3 6" "1 4 7" "2 5 8" "0 4 8" "2 4 6" )
+    for combo in "${c[@]}"; do
+        set -- $combo
+        if [[ "${tablero[$1]}" == "${tablero[$2]}" && "${tablero[$2]}" == "${tablero[$3]}" ]]; then
+            return 0 # ¡Hay ganador!
+        fi
+    done
+    return 1
+}
+
+for i in {1..9}; do
+    dibujar_tablero
+    
+    # Decidir a quién le toca
+    if [ $((turno % 2)) -eq 1 ]; then
+        nombre_actual=$jugador1
+        marca="X"
+    else
+        nombre_actual=$jugador2
+        marca="O"
+    fi
+
+    echo "Turno de: $nombre_actual ($marca)"
+    read -p "Elige una posicion (1-9): " pos
+    
+    # Validar posición
+    indice=$((pos-1))
+    if [[ "${tablero[$indice]}" =~ [XO] ]]; then
+        echo "¡Casilla ocupada! Pierdes turno."
+        sleep 1
+        continue
+    fi
+    
+    tablero[$indice]=$marca
+    
+    if verificar_ganador; then
+        dibujar_tablero
+        echo "¡FELICIDADES $nombre_actual, HAS GANADO!"
+        exit
+    fi
+    
+    turno=$((turno + 1))
+done
+
+dibujar_tablero
+echo "¡Es un EMPATE!"
